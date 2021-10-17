@@ -7,6 +7,8 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
+// TODO: separation with access and refresh tokens for nice auth things
+
 type JwtWrapper struct {
 	SecretKey       string
 	Issuer          string
