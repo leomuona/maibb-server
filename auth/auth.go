@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -9,25 +8,29 @@ import (
 
 // TODO: separation with access and refresh tokens for nice auth things
 
-type JwtWrapper struct {
-	SecretKey       string
-	Issuer          string
-	ExpirationHours int64
+type JwtAuth struct {
+	SecretKey                string
+	Issuer                   string
+	ExpirationMinutes        int64
+	RefreshExpirationMinutes int64
 }
 
-type JwtClaim struct {
-	Email string
-	jwt.StandardClaims
-}
-
-func (j *JwtWrapper) GenerateToken(email string) (signedToken string, err error) {
-	claims := &JwtClaim{
-		Email: email,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(j.ExpirationHours)).Unix(),
-			Issuer:    j.Issuer,
-		},
+func (j *JwtAuth) GenerateTokenPair(accessClaims AppClaims, refreshClaims RefreshClaims) (string, string, error) {
+	access, err := j.CreateAppToken(accessClaims)
+	if err != nil {
+		return "", "", err
 	}
+	refresh, err := j.CreateRefreshToken(refreshClaims)
+	if err != nil {
+		return "", "", err
+	}
+	return access, refresh, nil
+}
+
+func (j *JwtAuth) CreateAppToken(claims AppClaims) (signedToken string, err error) {
+	claims.IssuedAt = time.Now().Local().Unix()
+	claims.ExpiresAt = time.Now().Local().Add(time.Minute * time.Duration(j.ExpirationMinutes)).Unix()
+	claims.Issuer = j.Issuer
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
@@ -39,27 +42,15 @@ func (j *JwtWrapper) GenerateToken(email string) (signedToken string, err error)
 	return
 }
 
-func (j *JwtWrapper) ValidateToken(signedToken string) (claims *JwtClaim, err error) {
-	token, err := jwt.ParseWithClaims(
-		signedToken,
-		&JwtClaim{},
-		func(token *jwt.Token) (interface{}, error) {
-			return []byte(j.SecretKey), nil
-		},
-	)
+func (j *JwtAuth) CreateRefreshToken(claims RefreshClaims) (signedToken string, err error) {
+	claims.IssuedAt = time.Now().Local().Unix()
+	claims.ExpiresAt = time.Now().Local().Add(time.Minute * time.Duration(j.RefreshExpirationMinutes)).Unix()
+	claims.Issuer = j.Issuer
 
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	signedToken, err = token.SignedString([]byte(j.SecretKey))
 	if err != nil {
-		return
-	}
-
-	claims, ok := token.Claims.(*JwtClaim)
-	if !ok {
-		err = errors.New("Couldn't parse claims")
-		return
-	}
-
-	if claims.ExpiresAt < time.Now().Local().Unix() {
-		err = errors.New("JWT is expired")
 		return
 	}
 
