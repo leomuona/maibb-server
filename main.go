@@ -30,8 +30,9 @@ func Hello(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	json.NewEncoder(w).Encode(msg)
 }
 
-func Login(token string) httprouter.Handle {
+func Login(jwtAuth *auth.JwtAuth) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		token, _ := jwtAuth.CreateToken("pekka", []string{"ADMIN", "USER"})
 		msg := MessageResponse{
 			Message: "Bearer " + token,
 		}
@@ -51,13 +52,12 @@ func Secret(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 func main() {
-	auth := InitAuth()
-	token, _ := auth.CreateToken("pekka", []string{"ADMIN", "USER"})
+	jwtAuth := InitAuth()
 
 	router := httprouter.New()
 	router.GET("/", Hello)
-	router.GET("/login", Login(token))
-	router.GET("/secret", auth.Middleware(Secret))
+	router.GET("/login", Login(jwtAuth))
+	router.GET("/secret", jwtAuth.Middleware(Secret))
 
 	log.Println("starting server on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", router))

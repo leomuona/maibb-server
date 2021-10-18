@@ -14,7 +14,7 @@ func (j *JwtAuth) Middleware(next httprouter.Handle) httprouter.Handle {
 		if authHeader == "" {
 			// no token
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("No authorization header"))
+			w.Write([]byte("No Authorization header found"))
 			return
 		}
 
