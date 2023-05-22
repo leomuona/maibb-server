@@ -1,0 +1,39 @@
+{
+  "name": "maibb-server",
+  "version": "1.0.0",
+  "description": "MaiBB server",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/app.js",
+    "dev": "tsx watch src/app.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "rome check src",
+    "format": "rome format src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leomuona/maibb-server.git"
+  },
+  "keywords": [],
+  "author": "Leo Muona",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/leomuona/maibb-server/issues"
+  },
+  "homepage": "https://github.com/leomuona/maibb-server#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "@fastify/autoload": "^5.7.1",
+    "fastify": "^4.17.0",
+    "fastify-plugin": "^4.5.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node16": "^1.0.4",
+    "@types/node": "^20.2.3",
+    "rome": "12.1.2",
+    "tsx": "^3.12.7",
+    "typescript": "^5.0.4"
+  }
+}
