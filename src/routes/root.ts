@@ -4,9 +4,7 @@ const rootPlugin: FastifyPluginAsync = async (
   fastify,
   _opts,
 ): Promise<void> => {
-  fastify.get("/", async function (_request, _reply) {
-    return { root: true };
-  });
+  fastify.get("/", async (_request, _reply) => ({ root: true }));
 };
 
 export default rootPlugin;
