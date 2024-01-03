@@ -25,7 +25,7 @@ npm run lint
 Format files with linting rules:
 
 ```
-npm run format --save
+npm run format --write
 ```
 
 Compile and start separately:
