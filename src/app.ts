@@ -2,10 +2,12 @@ import { join } from "path";
 import autoload from "@fastify/autoload";
 import dotenv from "dotenv";
 import fastify from "fastify";
+import JwtService from "./plugins/jwt/jwt.service";
 
 dotenv.config();
 
 const app = fastify({ logger: true });
+app.decorate("jwt", new JwtService());
 
 app.register(autoload, {
   dir: join(__dirname, "routes"),
