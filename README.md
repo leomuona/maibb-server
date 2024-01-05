@@ -8,6 +8,12 @@ MaiBB server
 
 ## Commands
 
+First make your .env and make changes according to your local setup:
+
+```
+cp .env.example .env
+```
+
 For local development, use this:
 
 ```

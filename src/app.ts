@@ -1,16 +1,20 @@
 import { join } from "path";
-import autoLoad from "@fastify/autoload";
+import autoload from "@fastify/autoload";
+import dotenv from "dotenv";
 import fastify from "fastify";
+
+dotenv.config();
 
 const app = fastify({ logger: true });
 
-app.register(autoLoad, {
+app.register(autoload, {
   dir: join(__dirname, "routes"),
 });
 
 const start = async () => {
   try {
-    await app.listen({ port: 3000 });
+    const port = Number(process.env.PORT) || 3000;
+    await app.listen({ port });
   } catch (err) {
     app.log.error(err);
     process.exit(1);
