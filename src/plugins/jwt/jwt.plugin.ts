@@ -1,15 +1,30 @@
 import { FastifyPluginAsync } from "fastify";
 import fp from "fastify-plugin";
-import JwtService from "./jwt.service";
+
+type JWT = {
+  generateAccessToken: () => string;
+  generateRefreshToken: () => string;
+};
 
 declare module "fastify" {
   interface FastifyInstance {
-    jwt: JwtService;
+    jwt: JWT;
   }
 }
 
+const generateAccessToken = (): string => {
+  return "todo";
+};
+
+const generateRefreshToken = (): string => {
+  return "todo";
+};
+
 const jwtPlugin: FastifyPluginAsync = async (fastify, _opts): Promise<void> => {
-  fastify.decorate("jwt", new JwtService());
+  fastify.decorate("jwt", {
+    generateAccessToken,
+    generateRefreshToken,
+  });
 };
 
 export default fp(jwtPlugin);
