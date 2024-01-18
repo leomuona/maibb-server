@@ -1,12 +1,8 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { LoginPropsType } from "../schema/auth.schema";
 import { getUser, loginUser } from "../services/user.service";
-import {
-  buildRefreshTokenCookie,
-  getRefreshTokenFromCookie,
-} from "../utils/cookie";
 
-export const authorize = async (request: FastifyRequest): Promise<string> => {
+const getAuthToken = (request: FastifyRequest): string => {
   const header = request.headers.authorization;
   if (!header) {
     throw new Error("Bearer authorization required");
@@ -22,7 +18,14 @@ export const authorize = async (request: FastifyRequest): Promise<string> => {
     throw new Error("Bearer authorization required");
   }
 
-  return request.server.jwt.validate(token);
+  return token;
+};
+
+const authorize = (request: FastifyRequest): string => {
+  const token = getAuthToken(request);
+  const userId = request.server.jwt.validate(token);
+
+  return userId;
 };
 
 export const login = async (
@@ -31,28 +34,11 @@ export const login = async (
 ) => {
   try {
     const user = loginUser(request.body.login, request.body.password);
-    const token = request.server.jwt.createAccessToken(user.id);
-    const refreshToken = request.server.jwt.createRefreshToken(user.id);
+    const token = request.server.jwt.create(user.id);
 
-    reply.header("set-cookie", buildRefreshTokenCookie(refreshToken));
     return { token };
   } catch (_err) {
     return reply.code(400).send("login or password incorrect");
-  }
-};
-
-export const refresh = async (request: FastifyRequest, reply: FastifyReply) => {
-  const refreshToken = getRefreshTokenFromCookie(request.headers.cookie);
-  if (!refreshToken) {
-    return reply.code(400).send("Request has no refresh token");
-  }
-
-  try {
-    const userId = request.server.jwt.validateRefreshToken(refreshToken);
-    const token = request.server.jwt.createAccessToken(userId);
-    return { token };
-  } catch (_err) {
-    return reply.code(401).send("Invalid refresh token");
   }
 };
 
@@ -61,7 +47,7 @@ export const getAuthenticatedUser = async (
   reply: FastifyReply,
 ) => {
   try {
-    const userId = await authorize(request);
+    const userId = authorize(request);
     const user = getUser(userId);
     if (!user) {
       return reply.code(500).send("Unable to find user");
@@ -74,8 +60,8 @@ export const getAuthenticatedUser = async (
 
 export const logout = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
-    const userId = await authorize(request);
-    request.server.jwt.clearRefreshTokens(userId);
+    const token = getAuthToken(request);
+    request.server.jwt.invalidate(token);
 
     return reply.code(200).send();
   } catch (_err) {

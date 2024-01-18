@@ -3,13 +3,11 @@ import {
   getAuthenticatedUser,
   login,
   logout,
-  refresh,
 } from "../controllers/auth.controller";
 import {
   LoginPropsType,
   getAuthenticatedUserSchema,
   loginSchema,
-  refreshSchema,
 } from "../schema/auth.schema";
 
 const authRoutes: FastifyPluginAsync = async (
@@ -21,8 +19,6 @@ const authRoutes: FastifyPluginAsync = async (
     { schema: loginSchema },
     login,
   );
-
-  fastify.get("/refresh", { schema: refreshSchema }, refresh);
 
   fastify.get(
     "/authenticateduser",

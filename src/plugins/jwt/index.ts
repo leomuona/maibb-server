@@ -1,21 +1,14 @@
 import { randomUUID } from "crypto";
-import { addSeconds } from "date-fns";
 import { FastifyPluginAsync } from "fastify";
 import fp from "fastify-plugin";
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env";
-import {
-  addRefreshToken,
-  checkRefreshToken,
-  removeRefreshTokens,
-} from "./tokens";
+import { invalidateToken, isTokenInvalidated } from "./invalidTokens";
 
 type JWT = {
-  createAccessToken: (userId: string) => string;
-  createRefreshToken: (userId: string) => string;
+  create: (userId: string) => string;
   validate: (token: string) => string;
-  validateRefreshToken: (token: string) => string;
-  clearRefreshTokens: (userId: string) => void;
+  invalidate: (token: string) => void;
 };
 
 declare module "fastify" {
@@ -24,73 +17,59 @@ declare module "fastify" {
   }
 }
 
-const createAccessToken = (userId: string): string => {
-  const claims = {};
-  const options = {
-    issuer: env.JWT_ISSUER,
-    subject: userId,
-    expiresIn: env.JWT_TOKEN_VALIDITY * 1000, // ms
-    algrithm: "HS256",
-  };
-  const token = jwt.sign(claims, env.JWT_SECRET, options);
-  return token;
-};
-
-const createRefreshToken = (userId: string): string => {
+const create = (userId: string): string => {
   const jwtid = randomUUID();
   const claims = {};
   const options = {
     jwtid,
     issuer: env.JWT_ISSUER,
     subject: userId,
-    expiresIn: env.JWT_REFRESH_TOKEN_VALIDITY * 1000, // ms
-    algrithm: "HS256",
+    expiresIn: env.JWT_TOKEN_VALIDITY * 1000, // ms
+    algorithm: "HS256" as const,
   };
   const token = jwt.sign(claims, env.JWT_SECRET, options);
-
-  addRefreshToken(
-    jwtid,
-    userId,
-    addSeconds(new Date(), env.JWT_REFRESH_TOKEN_VALIDITY),
-  );
   return token;
 };
 
 const validate = (token: string): string => {
   const decoded = jwt.verify(token, env.JWT_SECRET, { algorithms: ["HS256"] });
-  if (decoded.sub && typeof decoded.sub === "string") {
-    return decoded.sub; // subject is userId
-  }
-  throw new Error("JWT token is missing subject");
-};
-
-const validateRefreshToken = (token: string): string => {
-  const decoded = jwt.verify(token, env.JWT_SECRET, { algorithms: ["HS256"] });
   if (typeof decoded === "string") {
-    throw new Error("Problem decoding JWT token");
+    throw new Error("Invalid JWT token structure");
   }
 
-  if (!(decoded.jti && checkRefreshToken(decoded.jti))) {
-    throw new Error("Refresh token is missing jti");
+  if (!decoded.jti || isTokenInvalidated(decoded.jti)) {
+    throw new Error("JWT token has been invalidated");
   }
 
-  if (decoded.sub && typeof decoded.sub === "string") {
+  if (decoded.sub) {
     return decoded.sub; // subject is userId
   }
   throw new Error("JWT token is missing subject");
 };
 
-const clearRefreshTokens = (userId: string) => {
-  removeRefreshTokens(userId);
+const invalidate = (token: string) => {
+  try {
+    const decoded = jwt.verify(token, env.JWT_SECRET, {
+      algorithms: ["HS256"],
+    });
+    if (typeof decoded === "string") {
+      // Invalid JWT token structure
+      return;
+    }
+
+    if (decoded.jti && decoded.exp) {
+      invalidateToken(decoded.jti, decoded.exp);
+    }
+  } catch (_err) {
+    // nothing
+  }
 };
 
 const jwtPlugin: FastifyPluginAsync = async (fastify, _opts): Promise<void> => {
   fastify.decorate("jwt", {
-    createAccessToken,
-    createRefreshToken,
+    create,
     validate,
-    validateRefreshToken,
-    clearRefreshTokens,
+    invalidate,
   });
 };
 

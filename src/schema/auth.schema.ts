@@ -24,12 +24,6 @@ export const loginSchema = {
   },
 };
 
-export const refreshSchema = {
-  response: {
-    200: Token,
-  },
-};
-
 export const getAuthenticatedUserSchema = {
   response: {
     200: AuthenticatedUser,
