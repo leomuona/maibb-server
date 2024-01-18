@@ -30,6 +30,7 @@ const createAccessToken = (userId: string): string => {
     issuer: env.JWT_ISSUER,
     subject: userId,
     expiresIn: env.JWT_TOKEN_VALIDITY * 1000, // ms
+    algrithm: "HS256",
   };
   const token = jwt.sign(claims, env.JWT_SECRET, options);
   return token;
@@ -43,6 +44,7 @@ const createRefreshToken = (userId: string): string => {
     issuer: env.JWT_ISSUER,
     subject: userId,
     expiresIn: env.JWT_REFRESH_TOKEN_VALIDITY * 1000, // ms
+    algrithm: "HS256",
   };
   const token = jwt.sign(claims, env.JWT_SECRET, options);
 
@@ -55,7 +57,7 @@ const createRefreshToken = (userId: string): string => {
 };
 
 const validate = (token: string): string => {
-  const decoded = jwt.verify(token, env.JWT_SECRET);
+  const decoded = jwt.verify(token, env.JWT_SECRET, { algorithms: ["HS256"] });
   if (decoded.sub && typeof decoded.sub === "string") {
     return decoded.sub; // subject is userId
   }
@@ -63,7 +65,7 @@ const validate = (token: string): string => {
 };
 
 const validateRefreshToken = (token: string): string => {
-  const decoded = jwt.verify(token, env.JWT_SECRET);
+  const decoded = jwt.verify(token, env.JWT_SECRET, { algorithms: ["HS256"] });
   if (typeof decoded === "string") {
     throw new Error("Problem decoding JWT token");
   }
