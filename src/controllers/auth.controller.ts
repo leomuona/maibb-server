@@ -33,7 +33,7 @@ export const login = async (
   reply: FastifyReply,
 ) => {
   try {
-    const user = loginUser(request.body.login, request.body.password);
+    const user = loginUser(request.body.username, request.body.password);
     const token = request.server.jwt.create(user.id);
 
     return { token };

@@ -1,7 +1,7 @@
 import { Static, Type } from "@sinclair/typebox";
 
 export const LoginProps = Type.Object({
-  login: Type.String(),
+  username: Type.String(),
   password: Type.String(),
 });
 export type LoginPropsType = Static<typeof LoginProps>;
