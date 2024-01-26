@@ -22,7 +22,10 @@ const authRoutes: FastifyPluginAsync = async (
 
   fastify.get(
     "/authenticateduser",
-    { schema: getAuthenticatedUserSchema },
+    {
+      schema: getAuthenticatedUserSchema,
+      onRequest: [fastify.jwt.authorize],
+    },
     getAuthenticatedUser,
   );
 
