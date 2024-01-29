@@ -8,6 +8,7 @@ import {
   LoginPropsType,
   getAuthenticatedUserSchema,
   loginSchema,
+  logoutSchema,
 } from "../schema/auth.schema";
 
 const authRoutes: FastifyPluginAsync = async (
@@ -29,7 +30,7 @@ const authRoutes: FastifyPluginAsync = async (
     getAuthenticatedUser,
   );
 
-  fastify.get("/logout", logout);
+  fastify.get("/logout", { schema: logoutSchema }, logout);
 };
 
 export default authRoutes;

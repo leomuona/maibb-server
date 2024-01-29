@@ -5,6 +5,7 @@ MaiBB server
 - Node
 - Typescript
 - Fastify
+- Swagger
 
 ## Commands
 

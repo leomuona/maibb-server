@@ -22,10 +22,16 @@ export const loginSchema = {
   response: {
     200: Token,
   },
+  tags: ["authentication"],
+};
+
+export const logoutSchema = {
+  tags: ["authentication"],
 };
 
 export const getAuthenticatedUserSchema = {
   response: {
     200: AuthenticatedUser,
   },
+  tags: ["authentication"],
 };
