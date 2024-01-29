@@ -6,9 +6,8 @@ import "dotenv/config";
 import fastify from "fastify";
 import { env } from "./config/env";
 import swaggerConfig from "./config/swagger.config";
+import userRoutes from "./modules/user/user.routes";
 import jwtPlugin from "./plugins/jwt";
-import authRoutes from "./routes/auth.routes";
-import rootRoutes from "./routes/root.routes";
 
 const app = fastify({ logger: true }).withTypeProvider<TypeBoxTypeProvider>();
 
@@ -37,8 +36,7 @@ app.register(swaggerUi, {
 
 app.register(jwtPlugin);
 
-app.register(rootRoutes);
-app.register(authRoutes, { prefix: "/auth" });
+app.register(userRoutes, { prefix: "/user" });
 
 const start = async () => {
   try {

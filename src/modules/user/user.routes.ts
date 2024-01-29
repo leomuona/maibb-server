@@ -1,17 +1,13 @@
 import { FastifyPluginAsync } from "fastify";
-import {
-  getAuthenticatedUser,
-  login,
-  logout,
-} from "../controllers/auth.controller";
+import { getAuthenticatedUser, login, logout } from "./user.controller";
 import {
   LoginPropsType,
   getAuthenticatedUserSchema,
   loginSchema,
   logoutSchema,
-} from "../schema/auth.schema";
+} from "./user.schema";
 
-const authRoutes: FastifyPluginAsync = async (
+const userRoutes: FastifyPluginAsync = async (
   fastify,
   _opts,
 ): Promise<void> => {
@@ -21,15 +17,15 @@ const authRoutes: FastifyPluginAsync = async (
     login,
   );
 
+  fastify.get("/logout", { schema: logoutSchema }, logout);
+
   fastify.get(
-    "/authenticateduser",
+    "/authenticated",
     {
       schema: getAuthenticatedUserSchema,
     },
     getAuthenticatedUser,
   );
-
-  fastify.get("/logout", { schema: logoutSchema }, logout);
 };
 
-export default authRoutes;
+export default userRoutes;

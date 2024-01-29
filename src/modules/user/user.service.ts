@@ -1,4 +1,4 @@
-import { AuthenticatedUserType } from "../schema/auth.schema";
+import { AuthenticatedUserType } from "./user.schema";
 
 const mikkiHiiri = {
   id: "4579863e-1970-4ca7-aa5e-0c82c51df145",

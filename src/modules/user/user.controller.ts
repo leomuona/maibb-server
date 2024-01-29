@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { LoginPropsType } from "../schema/auth.schema";
-import { getUser, loginUser } from "../services/user.service";
+import { LoginPropsType } from "./user.schema";
+import { getUser, loginUser } from "./user.service";
 
 export const login = async (
   request: FastifyRequest<{ Body: LoginPropsType }>,
@@ -13,6 +13,16 @@ export const login = async (
     return { token };
   } catch (_err) {
     return reply.code(400).send("login or password incorrect");
+  }
+};
+
+export const logout = async (request: FastifyRequest, reply: FastifyReply) => {
+  try {
+    request.server.jwt.invalidate(request);
+
+    return reply.code(200).send();
+  } catch (_err) {
+    return reply.code(401).send("Unauthorized");
   }
 };
 
@@ -30,14 +40,4 @@ export const getAuthenticatedUser = async (
   }
 
   return user;
-};
-
-export const logout = async (request: FastifyRequest, reply: FastifyReply) => {
-  try {
-    request.server.jwt.invalidate(request);
-
-    return reply.code(200).send();
-  } catch (_err) {
-    return reply.code(401).send("Unauthorized");
-  }
 };
