@@ -21,7 +21,7 @@ export const getAuthenticatedUser = async (
   reply: FastifyReply,
 ) => {
   if (!request.userId) {
-    return reply.code(401).send();
+    return reply.code(401).send("Unauthorized");
   }
 
   const user = getUser(request.userId);
