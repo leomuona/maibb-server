@@ -20,6 +20,10 @@ export const getAuthenticatedUser = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
+  if (!request.userId) {
+    return reply.code(401).send();
+  }
+
   const user = getUser(request.userId);
   if (!user) {
     return reply.code(500).send("Unable to find user");

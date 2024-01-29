@@ -7,11 +7,6 @@ import { invalidateToken, isTokenInvalidated } from "./invalidTokens";
 
 type JWT = {
   create: (userId: string) => string;
-  authorize: (
-    request: FastifyRequest,
-    reply: FastifyReply,
-    done: () => void,
-  ) => void;
   invalidate: (request: FastifyRequest) => void;
 };
 
@@ -21,7 +16,7 @@ declare module "fastify" {
   }
 
   interface FastifyRequest {
-    userId: string;
+    userId: string | null;
   }
 }
 
@@ -90,10 +85,9 @@ const invalidate = (request: FastifyRequest) => {
   }
 };
 
-// Add this to route's onRequest: [fastify.jwt.authorize]
 const authorize = (
   request: FastifyRequest,
-  reply: FastifyReply,
+  _reply: FastifyReply,
   done: () => void,
 ) => {
   try {
@@ -101,7 +95,7 @@ const authorize = (
     const userId = validate(token);
     request.userId = userId;
   } catch (_err) {
-    reply.code(401).send("Unauthorized");
+    request.userId = null;
   }
   done();
 };
@@ -109,9 +103,10 @@ const authorize = (
 const jwtPlugin: FastifyPluginAsync = async (fastify, _opts): Promise<void> => {
   fastify.decorate("jwt", {
     create,
-    authorize,
     invalidate,
   });
+
+  fastify.addHook("onRequest", authorize);
 };
 
 export default fp(jwtPlugin);
