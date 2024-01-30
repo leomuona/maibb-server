@@ -18,5 +18,8 @@
   },
   "formatter": {
     "indentStyle": "space"
+  },
+  "files": {
+    "ignore": ["migrations/*.js"]
   }
 }

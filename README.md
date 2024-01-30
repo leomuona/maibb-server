@@ -6,6 +6,8 @@ MaiBB server
 - Typescript
 - Fastify
 - Swagger
+- Knex
+- MariaDB
 
 ## Commands
 
@@ -40,4 +42,10 @@ Compile and start separately:
 ```
 npm run build
 npm start
+```
+
+Run MariaDB in a container:
+
+```
+docker run --name maibb-mariadb --restart unless-stopped -e MYSQL_ROOT_PASSWORD=changeme -p 3306:3306 -d mariadb
 ```

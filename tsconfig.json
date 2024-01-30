@@ -10,6 +10,6 @@
     "rootDir": "src",
     "outDir": "dist",
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "knexfile.js"],
   "exclude": ["node_modules", "dist"],
 }
