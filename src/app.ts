@@ -7,6 +7,7 @@ import fastify from "fastify";
 import { env } from "./config/env";
 import swaggerConfig from "./config/swagger.config";
 import userRoutes from "./modules/user/user.routes";
+import dbPlugin from "./plugins/db";
 import jwtPlugin from "./plugins/jwt";
 
 const app = fastify({ logger: true }).withTypeProvider<TypeBoxTypeProvider>();
@@ -34,6 +35,7 @@ app.register(swaggerUi, {
   routePrefix: "/docs",
 });
 
+app.register(dbPlugin);
 app.register(jwtPlugin);
 
 app.register(userRoutes, { prefix: "/user" });

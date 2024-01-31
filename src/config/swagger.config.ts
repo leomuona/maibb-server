@@ -14,8 +14,8 @@ const swaggerConfig = {
     produces: ["application/json"],
     tags: [
       {
-        name: "authentication",
-        description: "Authentication related end-points",
+        name: "user",
+        description: "User related end-points",
       },
     ],
   },

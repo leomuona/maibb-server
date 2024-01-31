@@ -2,9 +2,20 @@ import { FastifyPluginAsync } from "fastify";
 import fp from "fastify-plugin";
 import mysql from "mysql2/promise";
 import { env } from "../../config/env";
+import {
+  NewUserData,
+  UserData,
+  getUser,
+  getUserByUsername,
+  insertUser,
+} from "./users";
 
 type Database = {
-  foo: () => void;
+  users: {
+    create: (user: NewUserData) => Promise<UserData>;
+    get: (id: string) => Promise<UserData | null>;
+    getByUsername: (username: string) => Promise<UserData | null>;
+  };
 };
 
 declare module "fastify" {
@@ -13,12 +24,8 @@ declare module "fastify" {
   }
 }
 
-const foo = () => {
-  // TODO foo
-};
-
 const dbPlugin: FastifyPluginAsync = async (fastify, _opts): Promise<void> => {
-  const connection = await mysql.createConnection({
+  const pool = mysql.createPool({
     database: env.DB_NAME,
     host: env.DB_HOST,
     port: env.DB_PORT,
@@ -27,10 +34,15 @@ const dbPlugin: FastifyPluginAsync = async (fastify, _opts): Promise<void> => {
   });
 
   fastify.decorate("db", {
-    foo,
+    users: {
+      create: async (user: NewUserData) => await insertUser(user, pool),
+      get: async (id: string) => await getUser(id, pool),
+      getByUsername: async (username: string) =>
+        await getUserByUsername(username, pool),
+    },
   });
 
-  fastify.addHook("onClose", async () => connection.end());
+  fastify.addHook("onClose", async () => pool.end());
 };
 
 export default fp(dbPlugin);

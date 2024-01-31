@@ -1,10 +1,16 @@
 import { FastifyPluginAsync } from "fastify";
-import { getAuthenticatedUser, login, logout } from "./user.controller";
+import {
+  getAuthenticatedUser,
+  login,
+  logout,
+  registerUser,
+} from "./user.controller";
 import {
   LoginPropsType,
   getAuthenticatedUserSchema,
   loginSchema,
   logoutSchema,
+  registerUserSchema,
 } from "./user.schema";
 
 const userRoutes: FastifyPluginAsync = async (
@@ -26,6 +32,8 @@ const userRoutes: FastifyPluginAsync = async (
     },
     getAuthenticatedUser,
   );
+
+  fastify.post("/register", { schema: registerUserSchema }, registerUser);
 };
 
 export default userRoutes;
