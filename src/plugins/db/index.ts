@@ -1,48 +1,34 @@
 import { FastifyPluginAsync } from "fastify";
 import fp from "fastify-plugin";
-import mysql from "mysql2/promise";
-import { env } from "../../config/env";
-import {
-  NewUserData,
-  UserData,
-  getUser,
-  getUserByUsername,
-  insertUser,
-} from "./users";
+import { database } from "./database";
+import { NewUser, User } from "./types";
+import { createUser, getUser, getUserByUsername } from "./users";
 
-type Database = {
+type DbDecorator = {
   users: {
-    create: (user: NewUserData) => Promise<UserData>;
-    get: (id: string) => Promise<UserData | null>;
-    getByUsername: (username: string) => Promise<UserData | null>;
+    create: (user: NewUser) => Promise<string>;
+    get: (id: string) => Promise<User | undefined>;
+    getByUsername: (username: string) => Promise<User | undefined>;
   };
 };
 
 declare module "fastify" {
   interface FastifyInstance {
-    db: Database;
+    db: DbDecorator;
   }
 }
 
 const dbPlugin: FastifyPluginAsync = async (fastify, _opts): Promise<void> => {
-  const pool = mysql.createPool({
-    database: env.DB_NAME,
-    host: env.DB_HOST,
-    port: env.DB_PORT,
-    user: env.DB_USERNAME,
-    password: env.DB_PASSWORD,
-  });
-
   fastify.decorate("db", {
     users: {
-      create: async (user: NewUserData) => await insertUser(user, pool),
-      get: async (id: string) => await getUser(id, pool),
+      create: async (user: NewUser) => await createUser(user),
+      get: async (id: string) => await getUser(id),
       getByUsername: async (username: string) =>
-        await getUserByUsername(username, pool),
+        await getUserByUsername(username),
     },
   });
 
-  fastify.addHook("onClose", async () => pool.end());
+  fastify.addHook("onClose", async () => await database.destroy());
 };
 
 export default fp(dbPlugin);

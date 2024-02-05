@@ -63,11 +63,11 @@ export const registerUser = async (
   const { password, ...rest } = userData;
   const hashedPassword = await hashPassword(password);
 
-  const newUser = await request.server.db.users.create({
+  const id = await request.server.db.users.create({
     ...rest,
     password: hashedPassword,
   });
 
-  const response = { id: newUser.id, name: newUser.name };
+  const response = { id, name: userData.name };
   return reply.code(200).send(response);
 };
